@@ -106,7 +106,6 @@ if st.session_state.files_ready and uploaded_files:
         # ---------- Embeddings ----------
         embedding = HuggingFaceEmbeddings(
             model_name="sentence-transformers/all-MiniLM-L6-v2",
-            model_kwargs={"device": "cpu"},  # use "cuda" if GPU
             cache_folder="./model_cache"
         )
 
