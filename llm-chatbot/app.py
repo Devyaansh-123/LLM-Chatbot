@@ -66,7 +66,7 @@ uploaded_files = st.file_uploader("Upload one or more PDFs", type="pdf", accept_
 
 if uploaded_files and not st.session_state.files_ready:
     st.success(f"Uploaded {len(uploaded_files)} file(s). Click below when ready.")
-    if st.button("✅ Done Uploading"):
+    if st.button(" Done Uploading"):
         st.session_state.files_ready = True
 
 
@@ -101,7 +101,7 @@ if st.session_state.files_ready and uploaded_files:
 
             docs.extend(pdf_docs)
         
-        st.write(f"✅ Extracted {len(docs)} text chunks.")
+        st.write(f" Extracted {len(docs)} text chunks.")
 
         # ---------- Embeddings ----------
         embedding = HuggingFaceEmbeddings(
@@ -112,7 +112,7 @@ if st.session_state.files_ready and uploaded_files:
 
         db = get_vectorstore(docs, embedding)
         retriever = db.as_retriever(search_kwargs={"k": 5})
-        status.update(label="✅ Database Ready!", state="complete", expanded=False)
+        status.update(label=" Database Ready!", state="complete", expanded=False)
 
     # ---------- Auto-select LLM ----------
     groq_key = os.getenv("GROQ_API_KEY")
@@ -124,7 +124,7 @@ if st.session_state.files_ready and uploaded_files:
                 model="llama-3.3-70b-versatile",
                 groq_api_key=groq_key,
             )
-            st.sidebar.success("🦙 Using Groq LLaMA-3.3")
+            st.sidebar.success(" Using Groq LLaMA-3.3")
         except Exception as e:
             st.sidebar.warning(f"Groq unavailable ({e}). Switching to OpenAI.")
             llm = ChatOpenAI(model="gpt-4o-mini", openai_api_key=openai_key)
