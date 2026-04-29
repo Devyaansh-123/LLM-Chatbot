@@ -9,7 +9,7 @@ from gtts import gTTS
 from streamlit_lottie import st_lottie
 import streamlit.components.v1 as components
 
-from langchain_community.vectorstores import Chroma
+from langchain_community.vectorstores import FAISS
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.document_loaders import PyMuPDFLoader  
@@ -73,7 +73,7 @@ if uploaded_files and not st.session_state.files_ready:
 # ---------- Process PDFs ----------
 @st.cache_resource
 def get_vectorstore(_docs, _embedding):
-    return Chroma.from_documents(_docs, _embedding)
+    return FAISS.from_documents(_docs, _embedding)
 
 def run_qa(query, retriever, llm):
     """Direct retrieval + LLM call — no langchain.chains dependency."""
