@@ -10,7 +10,7 @@ from streamlit_lottie import st_lottie
 import streamlit.components.v1 as components
 
 from langchain_community.vectorstores import Chroma
-from langchain.chains import RetrievalQA
+from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.document_loaders import PyMuPDFLoader  
 
@@ -75,14 +75,20 @@ if uploaded_files and not st.session_state.files_ready:
 def get_vectorstore(_docs, _embedding):
     return Chroma.from_documents(_docs, _embedding)
 
-@st.cache_resource
-def get_qa_chain(_retriever, _llm):
-    return RetrievalQA.from_chain_type(
-        llm=_llm,
-        retriever=_retriever,
-        return_source_documents=True,
-        chain_type="stuff"
-    )
+def run_qa(query, retriever, llm):
+    """Direct retrieval + LLM call — no langchain.chains dependency."""
+    docs = retriever.invoke(query)
+    context = "\n\n".join([doc.page_content for doc in docs])
+    messages = [
+        SystemMessage(content=(
+            "You are a helpful assistant. Answer the question based only on "
+            "the following context. If the answer is not in the context, say so.\n\n"
+            + context
+        )),
+        HumanMessage(content=query),
+    ]
+    response = llm.invoke(messages)
+    return {"result": response.content, "source_documents": docs}
 
 if st.session_state.files_ready and uploaded_files:
     docs = []
@@ -135,7 +141,6 @@ if st.session_state.files_ready and uploaded_files:
         st.stop()
 
     # ---------- Retrieval QA ----------
-    qa = get_qa_chain(retriever, llm)
 
     st.divider()
     query = st.text_input("💬 Ask a question about your documents:", placeholder="e.g., What are the main findings?")
@@ -148,7 +153,7 @@ if st.session_state.files_ready and uploaded_files:
                 with lottie_placeholder:
                     st_lottie(anim, height=250)
 
-            result = qa.invoke({"query": query})
+            result = run_qa(query, retriever, llm)
             full_response = result["result"]
             lottie_placeholder.empty()
 
